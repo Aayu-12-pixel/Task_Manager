@@ -70,6 +70,17 @@ export default function Tasks() {
     }
   };
 
+  const handleToggleSubtask = async (task, subtaskIndex) => {
+    try {
+      const updatedSubtasks = [...task.subtasks];
+      updatedSubtasks[subtaskIndex].isCompleted = !updatedSubtasks[subtaskIndex].isCompleted;
+      await axios.put(`/tasks/${task._id}`, { subtasks: updatedSubtasks });
+      fetchTasks();
+    } catch (err) {
+      console.error('Failed to update subtask', err);
+    }
+  };
+
   const getPriorityColor = (priority) => {
     switch(priority) {
       case 'High': return 'text-red-700 bg-red-100 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
@@ -182,9 +193,30 @@ export default function Tasks() {
                   <h3 className={`text-lg font-bold mb-2 ${task.status === 'Completed' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}>
                     {task.title}
                   </h3>
-                  <p className={`text-sm mb-4 flex-grow ${task.status === 'Completed' ? 'text-gray-400 dark:text-gray-600' : 'text-gray-600 dark:text-gray-300'} line-clamp-3`}>
+                  <p className={`text-sm mb-4 ${task.status === 'Completed' ? 'text-gray-400 dark:text-gray-600' : 'text-gray-600 dark:text-gray-300'}`}>
                     {task.description || "No description provided."}
                   </p>
+
+                  {task.subtasks && task.subtasks.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtasks</p>
+                      <div className="space-y-1.5">
+                        {task.subtasks.map((st, i) => (
+                          <div key={i} className="flex items-center group/st">
+                            <button 
+                              onClick={() => handleToggleSubtask(task, i)}
+                              className={`mr-2 h-4 w-4 rounded border transition-colors flex items-center justify-center ${st.isCompleted ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-300 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-400'}`}
+                            >
+                              {st.isCompleted && <CheckCircle className="h-3 w-3" />}
+                            </button>
+                            <span className={`text-xs ${st.isCompleted ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {st.title}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-700 mt-auto">
                     <span className="flex items-center font-medium">

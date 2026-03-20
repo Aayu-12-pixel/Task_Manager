@@ -6,25 +6,20 @@ export default function TaskModal({ isOpen, onClose, onSave, task = null }) {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Medium');
   const [deadline, setDeadline] = useState('');
+  const [subtasks, setSubtasks] = useState([]);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title || '');
       setDescription(task.description || '');
       setPriority(task.priority || 'Medium');
-      if (task.deadline) {
-        const d = new Date(task.deadline);
-        const pad = (n) => String(n).padStart(2, '0');
-        const formatted = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        setDeadline(formatted);
-      } else {
-        setDeadline('');
-      }
+      setSubtasks(task.subtasks || []);
     } else {
       setTitle('');
       setDescription('');
       setPriority('Medium');
       setDeadline('');
+      setSubtasks([]);
     }
   }, [task, isOpen]);
 
@@ -32,7 +27,21 @@ export default function TaskModal({ isOpen, onClose, onSave, task = null }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ title, description, priority, deadline: deadline || null, _id: task?._id });
+    onSave({ title, description, priority, deadline: deadline || null, subtasks, _id: task?._id });
+  };
+
+  const addSubtask = () => {
+    setSubtasks([...subtasks, { title: '', isCompleted: false }]);
+  };
+
+  const removeSubtask = (index) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
+  };
+
+  const handleSubtaskChange = (index, value) => {
+    const newSubtasks = [...subtasks];
+    newSubtasks[index].title = value;
+    setSubtasks(newSubtasks);
   };
 
   return (
@@ -68,6 +77,32 @@ export default function TaskModal({ isOpen, onClose, onSave, task = null }) {
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Deadline</label>
                 <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 transition-colors [color-scheme:light] dark:[color-scheme:dark]" />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-300">Subtasks</label>
+                <button type="button" onClick={addSubtask} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                  + Add Subtask
+                </button>
+              </div>
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                {subtasks.map((st, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={st.title}
+                      onChange={(e) => handleSubtaskChange(index, e.target.value)}
+                      placeholder="Subtask name..."
+                      className="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    />
+                    <button type="button" onClick={() => removeSubtask(index)} className="text-red-500 hover:text-red-700 p-1">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+                {subtasks.length === 0 && <p className="text-xs text-gray-500 italic">No subtasks added yet.</p>}
               </div>
             </div>
             <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700 mt-6 space-x-3">
