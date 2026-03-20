@@ -6,7 +6,11 @@ const taskSchema = new mongoose.Schema({
   description: { type: String },
   priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
   status: { type: String, enum: ['Pending', 'Completed'], default: 'Pending' },
-  deadline: { type: Date }
+  deadline: { type: Date },
+  subtasks: [{
+    title: { type: String, required: true },
+    isCompleted: { type: Boolean, default: false }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Task', taskSchema);

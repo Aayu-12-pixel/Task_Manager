@@ -18,13 +18,14 @@ router.get('/dashboard', auth, async (req, res) => {
 // Create Task
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, description, priority, deadline } = req.body;
+    const { title, description, priority, deadline, subtasks } = req.body;
     const newTask = new Task({
       user: req.user.id,
       title,
       description,
       priority,
-      deadline
+      deadline,
+      subtasks: subtasks || []
     });
     const task = await newTask.save();
     res.json(task);
